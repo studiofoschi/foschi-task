@@ -200,6 +200,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .role-aso { background: var(--surface2); color: var(--text2); }
 .role-ortodontista { background: #FCE7F3; color: #9D174D; }
 .role-igienista { background: #D1FAE5; color: #065F46; }
+.role-segreteria { background: var(--orange-light); color: var(--orange); }
 .cat-ortodonzia { background: #FCE7F3; color: #9D174D; }
 
 .task-footer {
@@ -340,6 +341,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         <optgroup label="Igienisti">
           <option value="daniela:igienista">Daniela</option>
         </optgroup>
+        <optgroup label="Segreteria">
+          <option value="ilenia:segreteria">Ilenia</option>
+        </optgroup>
       </select>
     </div>
     <div id="pin-group">
@@ -408,6 +412,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
           <div class="assign-chip" data-role="collaboratore">Collaboratori</div>
           <div class="assign-chip" data-role="ortodontista">Ortodonzia</div>
           <div class="assign-chip" data-role="igienista">Igienisti</div>
+          <div class="assign-chip" data-role="segreteria">Segreteria</div>
         </div>
         <div id="photo-preview-new" style="display:none;margin-bottom:10px;position:relative;">
           <img id="photo-img-new" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;border:1.5px solid var(--border);">
@@ -515,7 +520,8 @@ var PINS = {
   'valentina-farella': '1010',
   'federico': '1011',
   'daniela': '1012',
-  'serena': '1013'
+  'serena': '1013',
+  'ilenia': '1014'
 };
 
 var currentUser = null;
@@ -640,9 +646,10 @@ function startApp() {
     davide: 'Davide', valentina: 'Valentina', giulia: 'Giulia',
     giuliana: 'Giuliana', marianna: 'Marianna', federica: 'Federica',
     gianmarco: 'Gian Marco', matilde: 'Matilde', andrea: 'Andrea',
-    'valentina-farella': 'Valentina F.', federico: 'Federico', daniela: 'Daniela', serena: 'Serena'
+    'valentina-farella': 'Valentina F.', federico: 'Federico', daniela: 'Daniela', serena: 'Serena',
+    ilenia: 'Ilenia'
   };
-  var roleLabels = { titolare: 'Titolare', manager: 'Manager', aso: 'ASO', collaboratore: 'Collaboratore', ortodontista: 'Ortodonzia', igienista: 'Igienista', 'orto-aso': 'Ortodonzia' };
+  var roleLabels = { titolare: 'Titolare', manager: 'Manager', aso: 'ASO', collaboratore: 'Collaboratore', ortodontista: 'Ortodonzia', igienista: 'Igienista', 'orto-aso': 'Ortodonzia', segreteria: 'Segreteria' };
   var displayName = names[currentUser.name] || currentUser.name;
   document.getElementById('header-user-badge').textContent = displayName + ' \u00b7 ' + (roleLabels[currentUser.role] || currentUser.role);
   document.getElementById('diag-user').textContent = currentUser.name;
@@ -1019,7 +1026,7 @@ function renderCard(t) {
   var roleClass = 'role-' + (t.ruoloSegnalante || 'aso');
   var catLabels = { clinico: '🦷 Clinico', amministrativo: '📑 Amm.', interno: '💬 Interno', generale: '📋 Generale', ortodonzia: '🦄 Ortodonzia' };
   var priLabels = { urgente: '🔴 Urgente', importante: '🟡 Importante', pianificato: '🟢 Pianificato' };
-  var roleLabels = { titolare: 'Titolare', manager: 'Manager', aso: 'ASO', collaboratore: 'Collab.', ortodontista: 'Orto.', igienista: 'Igienista', 'orto-aso': 'Orto.' };
+  var roleLabels = { titolare: 'Titolare', manager: 'Manager', aso: 'ASO', collaboratore: 'Collab.', ortodontista: 'Orto.', igienista: 'Igienista', 'orto-aso': 'Orto.', segreteria: 'Segreteria' };
   var assLabels = { tutti: 'Tutti', titolare: 'Titolari', manager: 'Manager', aso: 'ASO', collaboratore: 'Collaboratori', ortodontista: 'Ortodonzia', igienista: 'Igienisti' };
 
   var canEdit = currentUser.role === 'titolare' || currentUser.role === 'manager' || t.segnalato === currentUser.name;
@@ -1042,7 +1049,7 @@ function renderCard(t) {
 
   var selCatOpts = ['generale:📋 Generale', 'clinico:🦷 Clinico', 'amministrativo:📑 Amministrativo', 'interno:💬 Interno', 'ortodonzia:🦄 Ortodonzia'];
   var selPriOpts = ['pianificato:🟢 Pianificato', 'importante:🟡 Importante', 'urgente:🔴 Urgente'];
-  var selRuoloOpts = ['tutti:👥 Tutti', 'titolare:Titolari', 'manager:Manager', 'aso:ASO', 'collaboratore:Collaboratori', 'ortodontista:Ortodonzia', 'igienista:Igienisti'];
+  var selRuoloOpts = ['tutti:👥 Tutti', 'titolare:Titolari', 'manager:Manager', 'aso:ASO', 'collaboratore:Collaboratori', 'ortodontista:Ortodonzia', 'igienista:Igienisti', 'segreteria:Segreteria'];
 
   function buildRuoloChips(taskId, currentRuolo) {
     var ruoliSel = getRuoli({ruolo: currentRuolo});
@@ -1053,7 +1060,8 @@ function renderCard(t) {
       {value:'aso', label:'ASO'},
       {value:'collaboratore', label:'Collab.'},
       {value:'ortodontista', label:'Ortodonzia'},
-      {value:'igienista', label:'Igienisti'}
+      {value:'igienista', label:'Igienisti'},
+      {value:'segreteria', label:'Segreteria'}
     ];
     var html = '<div class="assign-row edit-ruolo-chips" id="edit-ruolo-chips-' + taskId + '" style="flex-wrap:wrap;gap:5px;">';
     opts.forEach(function(o) {
