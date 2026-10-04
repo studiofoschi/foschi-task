@@ -1242,15 +1242,17 @@ function askClaude(prompt) {
   respEl.classList.remove('hidden');
   respEl.textContent = '...';
 
-  var taskLines = allTasks.slice(0, 80).map(function(t) {
+  function sortKey(t) { var f = formatDate(t.data) || ''; var m = f.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/); return (m ? m[3] + ('0' + m[2]).slice(-2) + ('0' + m[1]).slice(-2) : '00000000') + (t.ora || ''); }
+  var sortedTasks = allTasks.slice().sort(function(a, b) { var x = sortKey(a), y = sortKey(b); return x < y ? 1 : (x > y ? -1 : 0); });
+  var taskLines = sortedTasks.slice(0, 200).map(function(t) {
     return '[' + formatDate(t.data) + ' ' + (t.ora || '') + '] ' + t.testo +
       ' | cat:' + t.categoria + ' | pri:' + t.priorita +
       ' | da:' + t.segnalato + ' | fatto:' + t.fatto;
   }).join('\n');
 
-  var systemPrompt = 'Sei l\'assistente dello Studio Dentistico Foschi di Bologna. Analizza i task e rispondi in italiano, in modo conciso e professionale. I titolari sono Davide (dentista generalista) e Valentina (ortodontista e pedodontista). Staff: Giulia (manager), ASO: Marianna, Federica. Collaboratori: Gian Marco, Matilde. Team ortodonzia: Andrea, Valentina Farella. Federico, Serena e Giuliana fanno parte del team ortodonzia ma fungono anche da ASO. Igienisti: Daniela.';
+  var systemPrompt = 'Oggi è ' + nowDate() + '. I task sono elencati dal più recente al più vecchio. Rispondi in testo semplice, senza markdown (niente asterischi né simboli #): usa righe che iniziano con un trattino. ' + 'Sei l\'assistente dello Studio Dentistico Foschi di Bologna. Analizza i task e rispondi in italiano, in modo conciso e professionale. I titolari sono Davide (dentista generalista) e Valentina (ortodontista e pedodontista). Staff: Giulia (manager), ASO: Marianna, Federica. Collaboratori: Gian Marco, Matilde. Team ortodonzia: Andrea, Valentina Farella. Federico, Serena e Giuliana fanno parte del team ortodonzia ma fungono anche da ASO. Igienisti: Daniela.';
 
-  var userContent = 'Task dello studio (' + allTasks.length + ' totali):\n\n' + taskLines + '\n\n---\nDomanda: ' + prompt;
+  var userContent = 'Task dello studio (' + allTasks.length + ' totali, mostrati i ' + Math.min(allTasks.length, 200) + ' più recenti):\n\n' + taskLines + '\n\n---\nDomanda: ' + prompt;
 
   fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -1262,7 +1264,7 @@ function askClaude(prompt) {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-5-5',
-      max_tokens: 1000,
+      max_tokens: 3000,
       system: systemPrompt,
       messages: [{ role: 'user', content: userContent }]
     })
@@ -1271,7 +1273,8 @@ function askClaude(prompt) {
   .then(function(data) {
     var text = '';
     if (data && data.content && data.content.length) { for (var k = 0; k < data.content.length; k++) { if (data.content[k] && data.content[k].type === 'text' && data.content[k].text) { text = data.content[k].text; break; } } }
-    if (!text) { text = (data && data.error) ? 'Errore Claude: ' + (data.error.message || data.error.type || 'sconosciuto') : 'Nessuna risposta (v34) - risposta ricevuta: ' + JSON.stringify(data).slice(0, 400); }
+    if (!text) { text = (data && data.error) ? 'Errore Claude: ' + (data.error.message || data.error.type || 'sconosciuto') : 'Nessuna risposta (v35) - risposta ricevuta: ' + JSON.stringify(data).slice(0, 400); }
+    text = text.replace(/\*\*(.+?)\*\*/g, '$1').replace(/^#{1,6}\s*/gm, '');
     respEl.textContent = text;
     btn.disabled = false;
     btn.textContent = 'Chiedi a Claude';
