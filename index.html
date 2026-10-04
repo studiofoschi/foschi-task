@@ -1269,7 +1269,9 @@ function askClaude(prompt) {
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
-    var text = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : (data && data.error ? 'Errore Claude: ' + (data.error.message || data.error.type || 'sconosciuto') : 'Nessuna risposta');
+    var text = '';
+    if (data && data.content && data.content.length) { for (var k = 0; k < data.content.length; k++) { if (data.content[k] && data.content[k].type === 'text' && data.content[k].text) { text = data.content[k].text; break; } } }
+    if (!text) { text = (data && data.error) ? 'Errore Claude: ' + (data.error.message || data.error.type || 'sconosciuto') : 'Nessuna risposta (v34) - risposta ricevuta: ' + JSON.stringify(data).slice(0, 400); }
     respEl.textContent = text;
     btn.disabled = false;
     btn.textContent = 'Chiedi a Claude';
