@@ -1261,7 +1261,7 @@ function askClaude(prompt) {
       'anthropic-dangerous-direct-browser-access': 'true'
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-5-5',
       max_tokens: 1000,
       system: systemPrompt,
       messages: [{ role: 'user', content: userContent }]
@@ -1269,7 +1269,7 @@ function askClaude(prompt) {
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
-    var text = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : 'Nessuna risposta';
+    var text = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : (data && data.error ? 'Errore Claude: ' + (data.error.message || data.error.type || 'sconosciuto') : 'Nessuna risposta');
     respEl.textContent = text;
     btn.disabled = false;
     btn.textContent = 'Chiedi a Claude';
